@@ -59,10 +59,17 @@ func Transfer(userIdFrom uint, userIdTo uint, amount int) {
 func ChangeAmount(userId uint, amount int) {
 	db, _ := utils.GetDB()
 	var balance Balance
+	var transaction Transaction
 
 	res := db.Where(Balance{UserId: userId}).Attrs(Balance{Amount: amount}).FirstOrCreate(&balance)
 	if res.RowsAffected == 0 {
 		db.Model(&balance).Update("amount", balance.Amount+amount)
 	}
+
+	transaction.Amount = amount
+	transaction.Comment = "Изменение баланса: " + strconv.Itoa(amount)
+	transaction.UserID = userId
+	db.Create(&transaction)
+
 	fmt.Println("created or updated")
 }
