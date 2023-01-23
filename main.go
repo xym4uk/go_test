@@ -4,16 +4,20 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 	"github.com/xym4uk/testAvito/controllers"
+	"github.com/xym4uk/testAvito/models"
 	"github.com/xym4uk/testAvito/utils"
 	"net/http"
 )
 
 func main() {
-	var _, dbErr = utils.GetDB()
+	var db, dbErr = utils.GetDB()
 	if dbErr != nil {
 		log.Fatal().Err(dbErr).Msg("")
 		return
 	}
+
+	db.AutoMigrate(&models.Balance{}, &models.Transaction{}, &models.User{})
+
 	log.Log().Msg("Starting http server...")
 
 	router := mux.NewRouter()
