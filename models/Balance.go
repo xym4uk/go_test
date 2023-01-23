@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"github.com/xym4uk/testAvito/utils"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -15,7 +16,7 @@ type Balance struct {
 
 func GetAmount(userId uint) *Balance {
 	var balance Balance
-	db, _ := GetDB()
+	db, _ := utils.GetDB()
 	db.Where(Balance{UserId: userId}).First(&balance)
 	amount := float64(balance.Amount) / 100.0
 	fmt.Printf("На счету %.2f рублей", amount)
@@ -24,7 +25,7 @@ func GetAmount(userId uint) *Balance {
 }
 
 func Transfer(userIdFrom uint, userIdTo uint, amount int) {
-	db, _ := GetDB()
+	db, _ := utils.GetDB()
 	var balanceFrom, balanceTo Balance
 	if amount <= 0 {
 		return
@@ -48,6 +49,7 @@ func Transfer(userIdFrom uint, userIdTo uint, amount int) {
 
 		transaction.Amount = amount
 		transaction.Comment = "Перевод пользователю. ID: " + strconv.FormatUint(uint64(balanceTo.UserId), 10)
+		transaction.UserID = balanceFrom.UserId
 		tx.Create(&transaction)
 
 		return nil
@@ -55,7 +57,7 @@ func Transfer(userIdFrom uint, userIdTo uint, amount int) {
 }
 
 func ChangeAmount(userId uint, amount int) {
-	db, _ := GetDB()
+	db, _ := utils.GetDB()
 	var balance Balance
 
 	res := db.Where(Balance{UserId: userId}).Attrs(Balance{Amount: amount}).FirstOrCreate(&balance)
