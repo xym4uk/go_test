@@ -12,14 +12,21 @@ import (
 )
 
 var GetBalance = func(w http.ResponseWriter, r *http.Request) {
+	var currencyChanel = make(chan float64, 1)
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["userId"])
 	if err != nil {
 		u.Respond(w, u.Message(false, "Некорректный id"))
 	}
 
-	data := models.GetAmount(uint(id))
+	go u.GetCurrency(r.FormValue("currency"), currencyChanel)
 
+	cur := <-currencyChanel
+
+	println(cur)
+
+	data := models.GetAmount(uint(id))
+	data.Amount = int(float64(data.Amount) * cur)
 	resp := u.Message(true, "success")
 	resp["data"] = data
 	u.Respond(w, resp)
