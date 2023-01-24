@@ -23,8 +23,6 @@ var GetBalance = func(w http.ResponseWriter, r *http.Request) {
 
 	cur := <-currencyChanel
 
-	println(cur)
-
 	data := models.GetAmount(uint(id))
 	data.Amount = int(float64(data.Amount) * cur)
 	resp := u.Message(true, "success")
