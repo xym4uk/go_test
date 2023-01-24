@@ -16,7 +16,11 @@ func main() {
 		return
 	}
 
-	db.AutoMigrate(&models.Balance{}, &models.Transaction{}, &models.User{})
+	migrateErr := db.AutoMigrate(&models.Balance{}, &models.Transaction{}, &models.User{})
+	if migrateErr != nil {
+		log.Fatal().Err(migrateErr).Msg("")
+		return
+	}
 
 	log.Log().Msg("Starting http server...")
 

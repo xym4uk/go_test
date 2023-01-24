@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"github.com/enfipy/locker"
 	"github.com/gorilla/mux"
 	"github.com/xym4uk/testAvito/controllers/requests"
 	"github.com/xym4uk/testAvito/models"
@@ -26,12 +27,15 @@ var GetBalance = func(w http.ResponseWriter, r *http.Request) {
 
 var Transfer = func(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	var t requests.TransferRequest
-	err := decoder.Decode(&t)
+	var tr requests.TransferRequest
+	err := decoder.Decode(&tr)
 	if err != nil {
 		u.Respond(w, u.Message(false, "invalid request"))
 	}
-	models.Transfer(t.From, t.To, t.Amount)
+	lock := locker.Initialize()
+	lock.Lock(strconv.FormatUint(uint64(tr.From), 10))
+	models.Transfer(tr.From, tr.To, tr.Amount)
+	lock.Unlock(strconv.FormatUint(uint64(tr.From), 10))
 
 	u.Respond(w, u.Message(true, "success"))
 }
@@ -43,7 +47,10 @@ var ChangeAmount = func(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		u.Respond(w, u.Message(false, "invalid request"))
 	}
+	lock := locker.Initialize()
+	lock.Lock(strconv.FormatUint(uint64(c.UserID), 10))
 	models.ChangeAmount(c.UserID, c.Amount)
+	lock.Unlock(strconv.FormatUint(uint64(c.UserID), 10))
 
 	u.Respond(w, u.Message(true, "success"))
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/xym4uk/testAvito/utils"
 	"gorm.io/gorm"
 	"strconv"
+	"time"
 )
 
 type Balance struct {
@@ -32,7 +33,7 @@ func Transfer(userIdFrom uint, userIdTo uint, amount int) {
 	}
 	db.Where(Balance{UserId: userIdFrom}).FirstOrCreate(&balanceFrom)
 	if balanceFrom.Amount < amount {
-		fmt.Println("Недостаточно бабосов")
+		fmt.Println("Недостаточно средств")
 		return
 	}
 
@@ -50,6 +51,7 @@ func Transfer(userIdFrom uint, userIdTo uint, amount int) {
 		transaction.Amount = amount
 		transaction.Comment = "Перевод пользователю. ID: " + strconv.FormatUint(uint64(balanceTo.UserId), 10)
 		transaction.UserID = balanceFrom.UserId
+		transaction.CreatedAt = time.Now()
 		tx.Create(&transaction)
 
 		return nil
@@ -69,6 +71,7 @@ func ChangeAmount(userId uint, amount int) {
 	transaction.Amount = amount
 	transaction.Comment = "Изменение баланса: " + strconv.Itoa(amount)
 	transaction.UserID = userId
+	transaction.CreatedAt = time.Now()
 	db.Create(&transaction)
 
 	fmt.Println("created or updated")

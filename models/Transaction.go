@@ -1,12 +1,16 @@
 package models
 
-import "github.com/xym4uk/testAvito/utils"
+import (
+	"github.com/xym4uk/testAvito/utils"
+	"time"
+)
 
 type Transaction struct {
-	ID      uint `gorm:"primarykey"`
-	Amount  int
-	Comment string
-	UserID  uint
+	ID        uint `gorm:"primarykey"`
+	Amount    int
+	Comment   string
+	UserID    uint
+	CreatedAt time.Time
 }
 
 func GetTransactions(userId uint) *[]Transaction {
