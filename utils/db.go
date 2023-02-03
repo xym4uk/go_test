@@ -2,18 +2,20 @@ package utils
 
 import (
 	"github.com/joho/godotenv"
+	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"os"
 )
 
-func GetDB() (*gorm.DB, error) {
+var DB *gorm.DB
+
+func Init() *gorm.DB {
 	err := godotenv.Load(".env")
 	if err != nil {
-		return nil, err
+		log.Fatal().Err(err).Msg("error loading .env file")
 	}
-
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USERNAME")
 	password := os.Getenv("DB_PASSWORD")
@@ -23,8 +25,11 @@ func GetDB() (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
+
 	if err != nil {
-		return nil, err
+		log.Fatal().Err(err).Msg("DB init error")
 	}
-	return db, nil
+
+	DB = db
+	return DB
 }

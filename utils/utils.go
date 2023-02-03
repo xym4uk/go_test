@@ -4,15 +4,28 @@ import (
 	"encoding/json"
 	"github.com/rs/zerolog/log"
 	"net/http"
+	"time"
 )
 
-func Message(status bool, message string) map[string]interface{} {
-	return map[string]interface{}{"status": status, "message": message}
+type MessageResponse struct {
+	Status  bool        `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 }
 
-func Respond(w http.ResponseWriter, data map[string]interface{}) {
+func Message(status bool, message string) MessageResponse {
+	return MessageResponse{
+		Status:  status,
+		Message: message,
+	}
+}
+
+func Respond(w http.ResponseWriter, response MessageResponse) {
 	w.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
+	err := json.NewEncoder(w).Encode(response.Data)
+	if err != nil {
+		log.Fatal().Err(err).Msg("")
+	}
 }
 
 type CurrencyResponse struct {
@@ -23,9 +36,12 @@ func GetCurrency(currency string, currencyChanel chan<- float64) {
 	defer close(currencyChanel)
 
 	if currency != "" {
-		resp, err := http.Get("https://www.cbr-xml-daily.ru/latest.js")
+		client := http.Client{Timeout: 10 * time.Second}
+		resp, err := client.Get("https://www.cbr-xml-daily.ru/latest.js")
 		if err != nil {
-			log.Err(err)
+			log.Err(err).Msg("no response from currency host")
+			currencyChanel <- 1
+			return
 		}
 
 		var result CurrencyResponse

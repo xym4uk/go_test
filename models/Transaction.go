@@ -1,7 +1,8 @@
 package models
 
 import (
-	"github.com/xym4uk/testAvito/utils"
+	"context"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -13,10 +14,9 @@ type Transaction struct {
 	CreatedAt time.Time
 }
 
-func GetTransactions(userId uint) *[]Transaction {
-	db, _ := utils.GetDB()
+func GetTransactions(ctx context.Context, userId uint, db *gorm.DB) *[]Transaction {
 	var transactions []Transaction
-	db.Where(Transaction{UserID: userId}).Find(&transactions)
+	db.WithContext(ctx).Where(Transaction{UserID: userId}).Find(&transactions)
 
 	return &transactions
 }
